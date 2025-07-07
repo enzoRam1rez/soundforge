@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/sound.dart';
 import '../services/audio_player_service.dart';
-import '../widgets/category_tab.dart';
+//import '../widgets/category_tab.dart';
 import '../widgets/sound_grid.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,7 +12,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _categories = ['Ambience', 'Music', 'Effects'];
   final Map<String, List<Sound>> _sounds = {
@@ -101,7 +102,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         bottom: TabBar(
           controller: _tabController,
           tabs: _categories.map((category) => Tab(text: category)).toList(),
-          labelStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          labelStyle:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           indicatorColor: Theme.of(context).colorScheme.secondary,
           labelColor: Theme.of(context).colorScheme.secondary,
           unselectedLabelColor: Colors.grey[400],

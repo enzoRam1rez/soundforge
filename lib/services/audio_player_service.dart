@@ -2,8 +2,9 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:uuid/uuid.dart';
 import '../models/sound.dart';
+import 'package:flutter/foundation.dart';
 
-class AudioPlayerService {
+class AudioPlayerService extends ChangeNotifier {
   final Map<String, AudioPlayer> _activePlayers = {};
   final AudioPlayer _backgroundPlayer = AudioPlayer();
   final Uuid _uuid = const Uuid();
@@ -11,9 +12,9 @@ class AudioPlayerService {
   Future<void> playSound(Sound sound) async {
     final player = AudioPlayer();
     final playerId = _uuid.v4();
-    
+
     _activePlayers[playerId] = player;
-    
+
     try {
       await player.setAudioSource(
         AudioSource.asset(
@@ -25,10 +26,10 @@ class AudioPlayerService {
           ),
         ),
       );
-      
+
       player.setVolume(sound.volume);
       player.setLoopMode(sound.loop ? LoopMode.one : LoopMode.off);
-      
+
       player.play().then((_) {
         if (!sound.loop) {
           player.playerStateStream.listen((state) {
@@ -38,7 +39,6 @@ class AudioPlayerService {
           });
         }
       });
-      
     } catch (e) {
       print('Error playing sound: $e');
       _disposePlayer(playerId);
@@ -46,9 +46,8 @@ class AudioPlayerService {
   }
 
   Future<void> stopSound(String soundId) async {
-    final playersToStop = _activePlayers.entries
-        .where((entry) => entry.key == soundId)
-        .toList();
+    final playersToStop =
+        _activePlayers.entries.where((entry) => entry.key == soundId).toList();
 
     for (var entry in playersToStop) {
       await entry.value.stop();
