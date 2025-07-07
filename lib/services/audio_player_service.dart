@@ -23,12 +23,11 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> playSound(Sound sound) async {
-    final player = AudioPlayer();
-
     if (_activePlayers.containsKey(sound.id)) {
       await stopSound(sound.id);
     }
 
+    final player = AudioPlayer();
     _activePlayers[sound.id] = player;
 
     try {
@@ -97,8 +96,10 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
+  @override
   void dispose() {
     stopAllSounds();
     _backgroundPlayer.dispose();
+    super.dispose();
   }
 }
