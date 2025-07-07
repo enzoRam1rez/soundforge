@@ -6,6 +6,14 @@ import 'package:flutter/foundation.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   final Map<String, AudioPlayer> _activePlayers = {};
+  final Map<String, Sound> _activeSounds = {};
+  final Map<String, double> _soundVolumes = {};
+  final Map<String, double> _categoryVolumes = {
+    'Ambiance': 1.0,
+    'Music': 1.0,
+    'Effects': 1.0,
+  };
+
   final AudioPlayer _backgroundPlayer = AudioPlayer();
 
   Future<void> _fadeVolume(
@@ -29,6 +37,8 @@ class AudioPlayerService extends ChangeNotifier {
 
     final player = AudioPlayer();
     _activePlayers[sound.id] = player;
+    _activeSounds[sound.id] = sound;
+    _soundVolumes[sound.id] = sound.volume;
 
     try {
       await player.setAudioSource(
@@ -55,7 +65,9 @@ class AudioPlayerService extends ChangeNotifier {
         }
       });
 
-      _fadeVolume(player, 0.0, sound.volume, const Duration(seconds: 1));
+      final targetVolume =
+          sound.volume * (_categoryVolumes[sound.category] ?? 1.0);
+      _fadeVolume(player, 0.0, targetVolume, const Duration(seconds: 1));
     } catch (e) {
       debugPrint('Error playing sound: $e');
       _disposePlayer(sound.id);
@@ -75,11 +87,29 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
-  Future<void> setVolume(String soundId, double volume) async {
+  Future<void> setSoundVolume(String soundId, double volume) async {
     final player = _activePlayers[soundId];
-    if (player != null) {
-      await player.setVolume(volume);
+    _soundVolumes[soundId] = volume;
+    final sound = _activeSounds[soundId];
+    if (player != null && sound != null) {
+      final catVolume = _categoryVolumes[sound.category] ?? 1.0;
+      await player.setVolume(volume * catVolume);
     }
+  }
+
+  double getCategoryVolume(String category) =>
+      _categoryVolumes[category] ?? 1.0;
+
+  Future<void> setCategoryVolume(String category, double volume) async {
+    _categoryVolumes[category] = volume;
+    for (var entry in _activePlayers.entries) {
+      final sound = _activeSounds[entry.key];
+      if (sound != null && sound.category == category) {
+        final soundVol = _soundVolumes[entry.key] ?? 1.0;
+        await entry.value.setVolume(soundVol * volume);
+      }
+    }
+    notifyListeners();
   }
 
   Future<void> stopAllSounds() async {
@@ -93,6 +123,8 @@ class AudioPlayerService extends ChangeNotifier {
     if (player != null) {
       player.dispose();
       _activePlayers.remove(soundId);
+      _activeSounds.remove(soundId);
+      _soundVolumes.remove(soundId);
     }
   }
 

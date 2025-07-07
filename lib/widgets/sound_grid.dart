@@ -78,23 +78,39 @@ class _SoundButtonState extends State<SoundButton> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: _isPlaying 
-                  ? Theme.of(context).colorScheme.secondary.withOpacity(0.2)
-                  : Theme.of(context).colorScheme.surfaceVariant,
+              color: Theme.of(context).colorScheme.surfaceVariant,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: _isPlaying 
-                    ? Theme.of(context).colorScheme.secondary
-                    : Theme.of(context).colorScheme.outline,
-                width: 2,
-              ),
+              boxShadow: const [
+                BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+              ],
             ),
-            child: Icon(
-              _getIconForCategory(widget.sound.category),
-              size: 40,
-              color: _isPlaying 
-                  ? Theme.of(context).colorScheme.secondary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  _getIconForSound(widget.sound.id),
+                  size: 40,
+                  color: _isPlaying
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _isPlaying
+                        ? Theme.of(context).colorScheme.primary.withOpacity(0.8)
+                        : Theme.of(context).colorScheme.surface,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    _isPlaying ? Icons.pause : Icons.play_arrow,
+                    color: _isPlaying
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -120,10 +136,9 @@ class _SoundButtonState extends State<SoundButton> {
               setState(() {
                 _volume = value;
               });
-              context.read<AudioPlayerService>().setVolume(
-                    widget.sound.id,
-                    value,
-                  );
+              context
+                  .read<AudioPlayerService>()
+                  .setSoundVolume(widget.sound.id, value);
             },
           ),
         ),
@@ -131,14 +146,32 @@ class _SoundButtonState extends State<SoundButton> {
     );
   }
 
-  IconData _getIconForCategory(String category) {
-    switch (category.toLowerCase()) {
-      case 'ambience':
+  IconData _getIconForSound(String id) {
+    switch (id) {
+      case 'forest':
         return Icons.forest;
-      case 'music':
-        return Icons.music_note;
-      case 'effects':
-        return Icons.bolt;
+      case 'tavern':
+        return Icons.local_bar;
+      case 'rain':
+        return Icons.water_drop;
+      case 'campfire':
+        return Icons.local_fire_department;
+      case 'battle':
+        return Icons.sports_martial_arts;
+      case 'exploration':
+        return Icons.travel_explore;
+      case 'calm':
+        return Icons.self_improvement;
+      case 'mystery':
+        return Icons.visibility;
+      case 'sword':
+        return Icons.security;
+      case 'magic':
+        return Icons.auto_fix_high;
+      case 'door':
+        return Icons.meeting_room;
+      case 'explosion':
+        return Icons.whatshot;
       default:
         return Icons.audiotrack;
     }
