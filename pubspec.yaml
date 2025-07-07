@@ -1,0 +1,36 @@
+name: soundforge
+description: A soundboard app for RPG sessions
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  just_audio: ^0.9.34
+  audio_session: ^0.1.16
+  just_audio_background: ^0.0.1-beta.10
+  provider: ^6.1.1
+  flutter_ringtone_player: ^3.2.0
+  path_provider: ^2.1.1
+  uuid: ^3.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/audio/
+    - assets/images/
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700
