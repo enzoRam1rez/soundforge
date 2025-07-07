@@ -1,19 +1,23 @@
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:uuid/uuid.dart';
 import '../models/sound.dart';
 import 'package:flutter/foundation.dart';
 
 class AudioPlayerService extends ChangeNotifier {
+  /// Active players keyed by sound id so that volume and stop commands
+  /// can easily target the currently playing instance of a sound.
   final Map<String, AudioPlayer> _activePlayers = {};
   final AudioPlayer _backgroundPlayer = AudioPlayer();
-  final Uuid _uuid = const Uuid();
 
   Future<void> playSound(Sound sound) async {
     final player = AudioPlayer();
-    final playerId = _uuid.v4();
 
-    _activePlayers[playerId] = player;
+    // Stop any existing player for this sound to avoid stacking the same audio
+    if (_activePlayers.containsKey(sound.id)) {
+      await stopSound(sound.id);
+    }
+
+    _activePlayers[sound.id] = player;
 
     try {
       await player.setAudioSource(
@@ -34,24 +38,22 @@ class AudioPlayerService extends ChangeNotifier {
         if (!sound.loop) {
           player.playerStateStream.listen((state) {
             if (state.processingState == ProcessingState.completed) {
-              _disposePlayer(playerId);
+              _disposePlayer(sound.id);
             }
           });
         }
       });
     } catch (e) {
       print('Error playing sound: $e');
-      _disposePlayer(playerId);
+      _disposePlayer(sound.id);
     }
   }
 
   Future<void> stopSound(String soundId) async {
-    final playersToStop =
-        _activePlayers.entries.where((entry) => entry.key == soundId).toList();
-
-    for (var entry in playersToStop) {
-      await entry.value.stop();
-      _disposePlayer(entry.key);
+    final player = _activePlayers[soundId];
+    if (player != null) {
+      await player.stop();
+      _disposePlayer(soundId);
     }
   }
 
@@ -69,11 +71,11 @@ class AudioPlayerService extends ChangeNotifier {
     _activePlayers.clear();
   }
 
-  void _disposePlayer(String playerId) {
-    final player = _activePlayers[playerId];
+  void _disposePlayer(String soundId) {
+    final player = _activePlayers[soundId];
     if (player != null) {
       player.dispose();
-      _activePlayers.remove(playerId);
+      _activePlayers.remove(soundId);
     }
   }
 

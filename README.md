@@ -6,7 +6,7 @@ A Flutter-based soundboard application designed for tabletop RPG sessions. Play 
 
 - 🎵 Three main categories: Ambience, Music, and Effects
 - 🔄 Loop support for continuous playback
-- 🎚️ Individual volume control for each sound
+- 🎚️ Individual volume control for each sound with a slider under every button
 - 🎧 Multiple sounds can play simultaneously
 - 🎮 Simple, intuitive interface
 - 📱 Mobile-optimized design
