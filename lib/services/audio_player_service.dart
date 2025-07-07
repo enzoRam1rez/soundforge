@@ -24,9 +24,12 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> playSound(Sound sound) async {
     final player = AudioPlayer();
-    final playerId = sound.id;
 
-    _activePlayers[playerId] = player;
+    if (_activePlayers.containsKey(sound.id)) {
+      await stopSound(sound.id);
+    }
+
+    _activePlayers[sound.id] = player;
 
     try {
       await player.setAudioSource(
@@ -47,15 +50,16 @@ class AudioPlayerService extends ChangeNotifier {
         if (!sound.loop) {
           player.playerStateStream.listen((state) {
             if (state.processingState == ProcessingState.completed) {
-              _disposePlayer(playerId);
+              _disposePlayer(sound.id);
             }
           });
         }
       });
+
       _fadeVolume(player, 0.0, sound.volume, const Duration(seconds: 1));
     } catch (e) {
       print('Error playing sound: $e');
-      _disposePlayer(playerId);
+      _disposePlayer(sound.id);
     }
   }
 
@@ -85,11 +89,11 @@ class AudioPlayerService extends ChangeNotifier {
     }
   }
 
-  void _disposePlayer(String playerId) {
-    final player = _activePlayers[playerId];
+  void _disposePlayer(String soundId) {
+    final player = _activePlayers[soundId];
     if (player != null) {
       player.dispose();
-      _activePlayers.remove(playerId);
+      _activePlayers.remove(soundId);
     }
   }
 

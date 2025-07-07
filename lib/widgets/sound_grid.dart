@@ -105,28 +105,26 @@ class _SoundButtonState extends State<SoundButton> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        // Volume slider
-        if (_isPlaying) ...[
-          const SizedBox(height: 4),
-          SizedBox(
-            width: 80,
-            child: Slider(
-              value: _volume,
-              min: 0.0,
-              max: 1.0,
-              divisions: 10,
-              onChanged: (value) {
-                setState(() {
-                  _volume = value;
-                });
-                context.read<AudioPlayerService>().setVolume(
-                      widget.sound.id,
-                      value,
-                    );
-              },
-            ),
+        // Volume slider always visible to allow adjusting before playback
+        const SizedBox(height: 4),
+        SizedBox(
+          width: 80,
+          child: Slider(
+            value: _volume,
+            min: 0.0,
+            max: 1.0,
+            divisions: 10,
+            onChanged: (value) {
+              setState(() {
+                _volume = value;
+              });
+              context.read<AudioPlayerService>().setVolume(
+                    widget.sound.id,
+                    value,
+                  );
+            },
           ),
-        ],
+        ),
       ],
     );
   }
