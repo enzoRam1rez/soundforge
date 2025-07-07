@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../models/sound.dart';
@@ -5,9 +6,23 @@ import 'package:flutter/foundation.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   final Map<String, AudioPlayer> _activePlayers = {};
+  final AudioPlayer _backgroundPlayer = AudioPlayer();
+
+  Future<void> _fadeVolume(
+      AudioPlayer player, double start, double end, Duration duration) async {
+    const int steps = 20;
+    final double step = (end - start) / steps;
+    final Duration stepDuration = duration ~/ steps;
+
+    for (int i = 1; i <= steps; i++) {
+      final double volume = start + step * i;
+      await player.setVolume(volume);
+      await Future.delayed(stepDuration);
+    }
+    await player.setVolume(end);
+  }
 
   Future<void> playSound(Sound sound) async {
-    // Stop the sound first if it's already playing to avoid duplicates
     if (_activePlayers.containsKey(sound.id)) {
       await stopSound(sound.id);
     }
@@ -27,7 +42,7 @@ class AudioPlayerService extends ChangeNotifier {
         ),
       );
 
-      player.setVolume(sound.volume);
+      await player.setVolume(0.0);
       player.setLoopMode(sound.loop ? LoopMode.one : LoopMode.off);
 
       player.play().then((_) {
@@ -39,6 +54,8 @@ class AudioPlayerService extends ChangeNotifier {
           });
         }
       });
+
+      _fadeVolume(player, 0.0, sound.volume, const Duration(seconds: 1));
     } catch (e) {
       print('Error playing sound: $e');
       _disposePlayer(sound.id);
@@ -46,10 +63,15 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> stopSound(String soundId) async {
-    final player = _activePlayers[soundId];
-    if (player != null) {
+    final playersToStop =
+        _activePlayers.entries.where((entry) => entry.key == soundId).toList();
+
+    for (var entry in playersToStop) {
+      final player = entry.value;
+      final currentVolume = player.volume;
+      await _fadeVolume(player, currentVolume, 0.0, const Duration(seconds: 1));
       await player.stop();
-      _disposePlayer(soundId);
+      _disposePlayer(entry.key);
     }
   }
 
@@ -61,21 +83,23 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> stopAllSounds() async {
-    for (var player in _activePlayers.values) {
-      await player.stop();
+    for (var entry in _activePlayers.entries.toList()) {
+      await stopSound(entry.key);
     }
-    _activePlayers.clear();
   }
 
-  void _disposePlayer(String playerId) {
-    final player = _activePlayers[playerId];
+  void _disposePlayer(String soundId) {
+    final player = _activePlayers[soundId];
     if (player != null) {
       player.dispose();
-      _activePlayers.remove(playerId);
+      _activePlayers.remove(soundId);
     }
   }
 
+  @override
   void dispose() {
     stopAllSounds();
+    _backgroundPlayer.dispose();
+    super.dispose();
   }
 }
