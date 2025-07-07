@@ -57,7 +57,7 @@ class AudioPlayerService extends ChangeNotifier {
 
       _fadeVolume(player, 0.0, sound.volume, const Duration(seconds: 1));
     } catch (e) {
-      print('Error playing sound: $e');
+      debugPrint('Error playing sound: $e');
       _disposePlayer(sound.id);
     }
   }
