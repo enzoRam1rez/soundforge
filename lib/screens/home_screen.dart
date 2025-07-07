@@ -12,9 +12,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _HomeScreenState extends State<HomeScreen> {
   final List<String> _categories = ['Ambience', 'Music', 'Effects'];
   final Map<String, List<Sound>> _sounds = {
     'Ambience': [
@@ -39,6 +37,13 @@ class _HomeScreenState extends State<HomeScreen>
         category: 'Ambience',
         loop: true,
       ),
+      Sound(
+        id: 'campfire',
+        name: 'Campfire',
+        assetPath: 'assets/audio/ambience/campfire.mp3',
+        category: 'Ambience',
+        loop: true,
+      ),
     ],
     'Music': [
       Sound(
@@ -52,6 +57,20 @@ class _HomeScreenState extends State<HomeScreen>
         id: 'exploration',
         name: 'Exploration',
         assetPath: 'assets/audio/music/exploration.mp3',
+        category: 'Music',
+        loop: true,
+      ),
+      Sound(
+        id: 'calm',
+        name: 'Calm',
+        assetPath: 'assets/audio/music/calm.mp3',
+        category: 'Music',
+        loop: true,
+      ),
+      Sound(
+        id: 'mystery',
+        name: 'Mystery',
+        assetPath: 'assets/audio/music/mystery.mp3',
         category: 'Music',
         loop: true,
       ),
@@ -78,18 +97,23 @@ class _HomeScreenState extends State<HomeScreen>
         category: 'Effects',
         loop: false,
       ),
+      Sound(
+        id: 'explosion',
+        name: 'Explosion',
+        assetPath: 'assets/audio/effects/explosion.mp3',
+        category: 'Effects',
+        loop: false,
+      ),
     ],
   };
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _categories.length, vsync: this);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -99,20 +123,27 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBar(
         title: const Text('SoundForge'),
         centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: _categories.map((category) => Tab(text: category)).toList(),
-          labelStyle:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          indicatorColor: Theme.of(context).colorScheme.secondary,
-          labelColor: Theme.of(context).colorScheme.secondary,
-          unselectedLabelColor: Colors.grey[400],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: ListView(
+        padding: const EdgeInsets.only(top: 16, bottom: 80),
         children: _categories.map((category) {
-          return SoundGrid(sounds: _sounds[category] ?? []);
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    category,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SoundGrid(sounds: _sounds[category] ?? []),
+              ],
+            ),
+          );
         }).toList(),
       ),
       floatingActionButton: FloatingActionButton(
